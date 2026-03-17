@@ -1,11 +1,12 @@
 import { describe, expect, test } from "bun:test";
 
-const BACKEND_URL = "ws://localhost:8080";
+const BACKEND_URL1 = "ws://localhost:8080";
+const BACKEND_URL2 = "ws://localhost:8081";
 
 describe("Chat application", () => {
     test("Message from room1 reaches another participant in room1", async () => {
-        const ws1 = new WebSocket(BACKEND_URL);
-        const ws2 = new WebSocket(BACKEND_URL);
+        const ws1 = new WebSocket(BACKEND_URL1);
+        const ws2 = new WebSocket(BACKEND_URL2);
 
         // make sure sockets are connected
         await new Promise<void>((resolve, reject) => {

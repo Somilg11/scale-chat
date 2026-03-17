@@ -1,12 +1,24 @@
-import { WebSocketServer, WebSocket } from "ws";
+import { WebSocketServer, WebSocket as WebSocketWsType } from "ws";
 
-const wss = new WebSocketServer({ port: 8080 });
+const wss = new WebSocketServer({ port: 8081 });
 
 interface Room {
-    sockets: WebSocket[]
+    sockets: WebSocketWsType[]
 }
 
 const rooms: Record<string, Room> = {}
+
+const RELAYER_URL = "ws://localhost:3001";
+const relayerSocket = new WebSocket(RELAYER_URL);
+
+relayerSocket.onmessage = ({data}) => {
+    const parseData = JSON.parse(data);
+    
+    if(parseData.type == "chat"){
+        const room = parseData.room;
+        rooms[room]?.sockets.map(socket => socket.send(data));
+    }
+}
 
 wss.on("connection", (ws) => {
   console.log("Client connected");
@@ -22,8 +34,7 @@ wss.on("connection", (ws) => {
         rooms[room].sockets.push(ws);
     }
     if(parseData.type == "chat"){
-        const room = parseData.room;
-        rooms[room]?.sockets.map(socket => socket.send(data));
+        relayerSocket.send(data);
     }
   });
 
@@ -32,4 +43,4 @@ wss.on("connection", (ws) => {
   });
 });
 
-console.log("WebSocket server started on ws://localhost:8080");
+console.log("WebSocket server started on ws://localhost:8081");
